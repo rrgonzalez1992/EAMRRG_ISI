@@ -36,14 +36,16 @@ public class Autobus extends Thread{
 	
 	public void atasco() throws InterruptedException{
 		System.out.println("El bus " + busId + " está en un atasco");
-		this.sleep(60000);
+		System.out.println("COMIENZA ATASCO "+busId);
+		Thread.sleep(300000);
+		System.out.println("TERMINA ATASCO "+busId);
 	}
 
 	public void run() {
 		while(true){
 			int desplazamiento = new Random().nextInt(4);
-			int atascoRandom = new Random().nextInt(3);
-			if(atascoRandom%3 == 1){
+			int atascoRandom = new Random().nextInt(1000);
+			if(atascoRandom == 57){
 				try {
 					atasco();
 				} catch (InterruptedException e) {}
@@ -66,6 +68,9 @@ public class Autobus extends Thread{
 						latitud += 0.04;
 						break;
 				}
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {}
 			}
 		}
 	}

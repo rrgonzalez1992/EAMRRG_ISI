@@ -47,7 +47,7 @@ public class Linea extends Thread{
 				
 				System.out.println(bus.toString());
 				try {
-					this.sleep(16000);
+					Thread.sleep(15001);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
