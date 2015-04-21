@@ -35,10 +35,10 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
                 <set-payload value="Detected Alert '#[message.inboundProperties['eventPatternName']]: #[payload.toString()]" doc:name="Set Alert Payload"/>
                 <smtps:outbound-endpoint host="smtp.gmail.com" port="465" user="${email.username}" password="${email.password}" to="${emailto}" from="${emailfrom}" subject="Detected ALERT" responseTimeout="10000" doc:name="Send Alert By Email"/>
             </processor-chain>
-            <logger level="INFO" doc:name="Logger"/>
+            <logger message="***Complex Event: #[payload]" level="INFO" doc:name="Logger"/>
             <processor-chain>
-                <custom-transformer class="transformer.JsonToIslandEventTransformer" doc:name="Copy_of_JSON to IslandEvent"/>
-                <cxf:jaxws-service doc:name="CXF"/>
+                <custom-transformer class="transformer.ComplexEventToWSTransformer" doc:name="Java"/>
+                <cxf:jaxws-service serviceClass="webservice.WeatherHttpGet" doc:name="CXF"/>
                 <http:request config-ref="" path="" method="" doc:name="HTTP"/>
                 <echo-component doc:name="Echo"/>
                 <file:outbound-endpoint responseTimeout="10000" doc:name="File"/>
