@@ -1,7 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:smtps="http://www.mulesoft.org/schema/mule/smtps" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/smtps/current/mule-smtps.xsd">
+<http:polling-connector name="HTTP_Polling" cookieSpec="netscape" validateConnections="true" pollingFrequency="60000" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" proxyHostname="api.thingspeak.com" proxyPort="80" doc:name="HTTP Polling"/>
+    <vm:endpoint exchange-pattern="one-way" path="ComplexEventConsumerPath" name="ComplexEventConsumerGlobalVM" doc:name="VM"/>
+<flow name="IslandEventReceptionAndManagement">
+<composite-source doc:name="Composite Source">
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/16302/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/16303/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/16306/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/16307/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/16308/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
+</composite-source>
+<custom-transformer class="transformer.JsonToIslandEventTransformer" doc:name="JSON to IslandEvent"/>
+        <scatter-gather doc:name="Scatter-Gather">
+            <logger message=" #[payload]" level="INFO" doc:name="Logger"/>
+            <custom-transformer class="esper.SendEventToEsperComponent" doc:name="Send IslandEvent to Esper Engine"/>
+        </scatter-gather>
+</flow>
+    <flow name="isi_practica_2Flow">
+        <vm:inbound-endpoint exchange-pattern="one-way"  doc:name="ComplexEvent Consumer" ref="ComplexEventConsumerGlobalVM"/>
+        <scatter-gather doc:name="Scatter-Gather">
+            <processor-chain>
+                <set-payload value="Detected Alert '#[message.inboundProperties['eventPatternName']]: #[payload.toString()]" doc:name="Set Alert Payload"/>
+                <smtps:outbound-endpoint host="smtp.gmail.com" port="465" user="${email.username}" password="${email.password}" to="${emailto}" from="${emailfrom}" subject="Detected ALERT" responseTimeout="10000" doc:name="Send Alert By Email"/>
+            </processor-chain>
+            <logger level="INFO" doc:name="Logger"/>
+            <processor-chain>
+                <custom-transformer class="transformer.JsonToIslandEventTransformer" doc:name="Copy_of_JSON to IslandEvent"/>
+                <cxf:jaxws-service doc:name="CXF"/>
+                <http:request config-ref="" path="" method="" doc:name="HTTP"/>
+                <echo-component doc:name="Echo"/>
+                <file:outbound-endpoint responseTimeout="10000" doc:name="File"/>
+            </processor-chain>
+        </scatter-gather>
+    </flow>
+</mule>
