@@ -15,6 +15,7 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
 <http:polling-connector name="HTTP_Polling" cookieSpec="netscape" validateConnections="true" pollingFrequency="60000" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" proxyHostname="api.thingspeak.com" proxyPort="80" doc:name="HTTP Polling"/>
     <vm:endpoint exchange-pattern="one-way" path="ComplexEventConsumerPath" name="ComplexEventConsumerGlobalVM" doc:name="VM"/>
     <http:connector name="HTTP_HTTPS" cookieSpec="netscape" validateConnections="true" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS"/>
+    <http:endpoint exchange-pattern="request-response"  connector-ref="HTTP_HTTPS" method="POST" name="HTTP" address="http://wsf.cdyne.com/WeatherWS/Weather.asmx" doc:name="HTTP"/>
 <flow name="IslandEventReceptionAndManagement">
 <composite-source doc:name="Composite Source">
 <http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/16302/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
@@ -26,7 +27,9 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
 <custom-transformer class="transformer.JsonToIslandEventTransformer" doc:name="JSON to IslandEvent"/>
         <scatter-gather doc:name="Scatter-Gather">
             <logger message=" #[payload]" level="INFO" doc:name="Logger"/>
-            <custom-transformer class="esper.SendEventToEsperComponent" doc:name="Send IslandEvent to Esper Engine"/>
+            <component doc:name="Send IslandEvent to Esper Engine">
+                <singleton-object class="esper.SendEventToEsperComponent"/>
+            </component>
         </scatter-gather>
 </flow>
     <flow name="ComplexEventReceptionAndDecisionMaking">
@@ -40,7 +43,7 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
             <processor-chain>
                 <custom-transformer class="transformer.ComplexEventToWSTransformer" doc:name="Java"/>
                 <cxf:jaxws-service port="WeatherSoap" service="GetCityWeatherByZIP" serviceClass="webservice.WeatherHttpGet" doc:name="CXF"/>
-               <http:inbound-endpoint exchange-pattern="request-response"  port="8081"  connector-ref="HTTP_HTTPS" doc:name="HTTP" address="http://wsf.cdyne.com/WeatherWS/Weather.asmx" responseTimeout="50000" />
+               <http:outbound-endpoint exchange-pattern="request-response"    connector-ref="HTTP_HTTPS" doc:name="HTTP"  responseTimeout="50000" ref="HTTP" method="POST"/>
                 <echo-component doc:name="Echo"/>
                 <file:outbound-endpoint responseTimeout="10000" doc:name="File" outputPattern="response-message.txt" path="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros"/>
             </processor-chain>
