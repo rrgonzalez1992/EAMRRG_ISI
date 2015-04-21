@@ -14,6 +14,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/smtps/current/mule-smtps.xsd">
 <http:polling-connector name="HTTP_Polling" cookieSpec="netscape" validateConnections="true" pollingFrequency="60000" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" proxyHostname="api.thingspeak.com" proxyPort="80" doc:name="HTTP Polling"/>
     <vm:endpoint exchange-pattern="one-way" path="ComplexEventConsumerPath" name="ComplexEventConsumerGlobalVM" doc:name="VM"/>
+    <http:connector name="HTTP_HTTPS" cookieSpec="netscape" validateConnections="true" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS"/>
 <flow name="IslandEventReceptionAndManagement">
 <composite-source doc:name="Composite Source">
 <http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/16302/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
@@ -28,7 +29,7 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
             <custom-transformer class="esper.SendEventToEsperComponent" doc:name="Send IslandEvent to Esper Engine"/>
         </scatter-gather>
 </flow>
-    <flow name="isi_practica_2Flow">
+    <flow name="ComplexEventReceptionAndDecisionMaking">
         <vm:inbound-endpoint exchange-pattern="one-way"  doc:name="ComplexEvent Consumer" ref="ComplexEventConsumerGlobalVM"/>
         <scatter-gather doc:name="Scatter-Gather">
             <processor-chain>
@@ -38,11 +39,25 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
             <logger message="***Complex Event: #[payload]" level="INFO" doc:name="Logger"/>
             <processor-chain>
                 <custom-transformer class="transformer.ComplexEventToWSTransformer" doc:name="Java"/>
-                <cxf:jaxws-service serviceClass="webservice.WeatherHttpGet" doc:name="CXF"/>
-                <http:request config-ref="" path="" method="" doc:name="HTTP"/>
+                <cxf:jaxws-service port="WeatherSoap" service="GetCityWeatherByZIP" serviceClass="webservice.WeatherHttpGet" doc:name="CXF"/>
+               <http:inbound-endpoint exchange-pattern="request-response"  port="8081"  connector-ref="HTTP_HTTPS" doc:name="HTTP" address="http://wsf.cdyne.com/WeatherWS/Weather.asmx" responseTimeout="50000" />
                 <echo-component doc:name="Echo"/>
-                <file:outbound-endpoint responseTimeout="10000" doc:name="File"/>
+                <file:outbound-endpoint responseTimeout="10000" doc:name="File" outputPattern="response-message.txt" path="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros"/>
             </processor-chain>
         </scatter-gather>
+    </flow>
+    <flow name="EventPatternAdditionToEsper">
+        <file:inbound-endpoint path="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros/new-eventpattern" moveToDirectory="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros/deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
+            <file:filename-regex-filter pattern="file:filename-regex-filter caseSensitive=true,pattern=.+\.epl" caseSensitive="true"/>
+        </file:inbound-endpoint>
+        <file:file-to-string-transformer doc:name="File to String"/>
+        <component doc:name="Add EventPattern to Esper Engine">
+            <singleton-object class="esper.AddEventPatternToEsperComponent"/>
+        </component>
+        <choice-exception-strategy doc:name="Choice Exception Strategy">
+            <catch-exception-strategy when="exception.causeMatches('com.espertech.esper.*')" doc:name="Syntax Error in EventPattern Code">
+                <file:outbound-endpoint path="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros/incorrect-eventpattern" responseTimeout="10000" doc:name="Incorrect EventPattern Code"/>
+            </catch-exception-strategy>
+        </choice-exception-strategy>
     </flow>
 </mule>
