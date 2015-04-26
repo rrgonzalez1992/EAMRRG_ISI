@@ -18,8 +18,8 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
     <http:endpoint exchange-pattern="request-response"  connector-ref="HTTP_HTTPS" method="POST" name="HTTP" address="http://wsf.cdyne.com/WeatherWS/Weather.asmx" doc:name="HTTP"/>
 <flow name="IslandEventReceptionAndManagement">
 <composite-source doc:name="Composite Source">
-<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34619/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
-<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34636/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP"/>
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34619/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP" responseTimeout="5000"/>
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34636/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP" responseTimeout="5000"/>
 </composite-source>
 <custom-transformer class="transformer.JsonToBusEventTransformer" doc:name="JSON to IslandEvent"/>
         <scatter-gather doc:name="Scatter-Gather">
