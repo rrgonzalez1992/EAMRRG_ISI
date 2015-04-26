@@ -22,7 +22,7 @@ public class Linea extends Thread{
 	
 	public void inicializarFlota(){
 		for(int i = 0; i < flota.length; i++){
-			flota[i] = new Autobus("L" + numero + "B0" + (i+1));
+			flota[i] = new Autobus("L" + numero + "B0" + (i+1), numero);
 		}
 		for(Autobus bus : flota){
 			bus.start();

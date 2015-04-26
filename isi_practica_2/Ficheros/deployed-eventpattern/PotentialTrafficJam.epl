@@ -1,0 +1,4 @@
+@Name("PotentialTrafficJam") 
+insert into PotentialTrafficJam
+select b.busID as Autobus, b.busLatitud as Latitud, b.busLongitud as Longitud
+from pattern[every b = BusEvent() -> (BusEvent(busLatitud = b.busLatitud, busLongitud = b.busLongitud, busID = b.busID))]

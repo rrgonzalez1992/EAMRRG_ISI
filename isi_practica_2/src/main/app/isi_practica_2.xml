@@ -41,12 +41,19 @@ http://www.mulesoft.org/schema/mule/twitter http://www.mulesoft.org/schema/mule/
         <scatter-gather doc:name="Scatter-Gather">
             <processor-chain>
                 <set-payload value="Alerta '#[message.inboundProperties['eventPatternName']]': #[payload.toString()]" doc:name="Set Alert Payload"/>
-                <smtps:outbound-endpoint host="smtp.gmail.com" port="465" user="${email.username}" password="${email.password}" to="${emailto}" from="${emailfrom}" subject="Atasco detectado" responseTimeout="10000" doc:name="Send Alert By Email"/>
+                <smtps:outbound-endpoint host="smtp.gmail.com" port="465" user="${email.username}" password="${email.password}" to="${emailto}" from="${emailfrom}" subject="Alerta producida" responseTimeout="10000" doc:name="Send Alert By Email"/>
             </processor-chain>
             <logger message="***Complex Event: #[payload]" level="INFO" doc:name="Logger"/>
             <processor-chain>
                 <set-payload value="#[payload]" doc:name="Set Twitter Information"/>
-                <twitter:update-status config-ref="Twitter" status="Atasco producido en la l&#237;nea #[payload.get('Autobus').toString()]. Rogamos tengan paciencia" doc:name="Twitter"/>
+                <choice doc:name="Choice">
+                    <when expression="message.inboundProperties['eventPatternName'] == 'PotentialTrafficJam'">
+                        <twitter:update-status config-ref="Twitter" status="Atasco producido en la l&#237;nea #[payload.get('Autobus').toString()]. Rogamos tengan paciencia" latitude="#[payload.get('busLatitud')]" longitude="#[payload.get('busLongitud')]" doc:name="TuitearAtasco"/>
+                    </when>
+                    <when expression="message.inboundProperties['eventPatternName'] == 'BusInStation'">
+                        <twitter:update-status config-ref="Twitter" status="El autobus #[payload.get('Autobus').toString()] ha finalizado su ruta. Pr&#243;ximamente retomar&#225; el itinerario." doc:name="TuitearRetirada"/>
+                    </when>
+                </choice>
             </processor-chain>
         </scatter-gather>
     </flow>
