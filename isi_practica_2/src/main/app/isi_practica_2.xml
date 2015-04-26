@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:smtps="http://www.mulesoft.org/schema/mule/smtps" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:smtps="http://www.mulesoft.org/schema/mule/smtps" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -11,15 +11,18 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
 http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd
 http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
-http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/smtps/current/mule-smtps.xsd">
-<http:polling-connector name="HTTP_Polling" cookieSpec="netscape" validateConnections="true" pollingFrequency="60000" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" proxyHostname="api.thingspeak.com" proxyPort="80" doc:name="HTTP Polling"/>
-    <vm:endpoint exchange-pattern="one-way" path="ComplexEventConsumerPath" name="ComplexEventConsumerGlobalVM" doc:name="VM"/>
+http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/smtps/current/mule-smtps.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+<http:polling-connector name="HTTP_Polling" cookieSpec="netscape" validateConnections="true" pollingFrequency="16001" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" proxyHostname="api.thingspeak.com" proxyPort="80" doc:name="HTTP Polling"/>
+    <vm:endpoint exchange-pattern="one-way" path="ComplexEventConsumerPath" name="ComplexEventConsumerGlobalVM" doc:name="VM">
+        <ee:multi-transaction action="NONE"/>
+    </vm:endpoint>
     <http:connector name="HTTP_HTTPS" cookieSpec="netscape" validateConnections="true" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS"/>
     <http:endpoint exchange-pattern="request-response"  connector-ref="HTTP_HTTPS" method="POST" name="HTTP" address="http://wsf.cdyne.com/WeatherWS/Weather.asmx" doc:name="HTTP"/>
 <flow name="IslandEventReceptionAndManagement">
 <composite-source doc:name="Composite Source">
-<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34619/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP" responseTimeout="5000"/>
-<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34636/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP" responseTimeout="5000"/>
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34619/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP" responseTimeout="1000"/>
+<http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34636/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP" responseTimeout="1000"/>
 </composite-source>
 <custom-transformer class="transformer.JsonToBusEventTransformer" doc:name="JSON to IslandEvent"/>
         <scatter-gather doc:name="Scatter-Gather">
@@ -30,7 +33,9 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
         </scatter-gather>
 </flow>
     <flow name="ComplexEventReceptionAndDecisionMaking">
-        <vm:inbound-endpoint exchange-pattern="one-way"  doc:name="ComplexEvent Consumer" ref="ComplexEventConsumerGlobalVM"/>
+        <vm:inbound-endpoint exchange-pattern="one-way"  doc:name="ComplexEvent Consumer" ref="ComplexEventConsumerGlobalVM">
+            <vm:transaction action="NONE"/>
+        </vm:inbound-endpoint>
         <scatter-gather doc:name="Scatter-Gather">
             <processor-chain>
                 <set-payload value="Detected Alert '#[message.inboundProperties['eventPatternName']]: #[payload.toString()]" doc:name="Set Alert Payload"/>
@@ -40,14 +45,14 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
             <processor-chain>
                 <custom-transformer class="transformer.ComplexEventToWSTransformer" doc:name="Java"/>
                 <cxf:jaxws-service port="WeatherSoap" service="GetCityWeatherByZIP" serviceClass="webservice.WeatherHttpGet" doc:name="CXF"/>
-               <http:outbound-endpoint exchange-pattern="request-response"    connector-ref="HTTP_HTTPS" doc:name="HTTP"  responseTimeout="50000" ref="HTTP" method="POST"/>
+               <http:outbound-endpoint exchange-pattern="request-response"    connector-ref="HTTP_HTTPS" doc:name="HTTP"   ref="HTTP" method="POST"/>
                 <echo-component doc:name="Echo"/>
-                <file:outbound-endpoint responseTimeout="10000" doc:name="File" outputPattern="response-message.txt" path="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros"/>
+                <file:outbound-endpoint responseTimeout="10000" doc:name="File" outputPattern="response-message.txt" path="C:\Users\Enrique\git\EAMRRG_ISI\isi_practica_2\Ficheros"/>
             </processor-chain>
         </scatter-gather>
     </flow>
     <flow name="EventPatternAdditionToEsper">
-        <file:inbound-endpoint path="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros/new-eventpattern" moveToDirectory="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros/deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
+        <file:inbound-endpoint path="C:\Users\Enrique\git\EAMRRG_ISI\isi_practica_2\Ficheros\new-eventpattern" moveToDirectory="C:\Users\Enrique\git\EAMRRG_ISI\isi_practica_2\Ficheros\deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
             <file:filename-regex-filter pattern="file:filename-regex-filter caseSensitive=true,pattern=.+\.epl" caseSensitive="true"/>
         </file:inbound-endpoint>
         <file:file-to-string-transformer doc:name="File to String"/>
@@ -56,7 +61,7 @@ http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/sm
         </component>
         <choice-exception-strategy doc:name="Choice Exception Strategy">
             <catch-exception-strategy when="exception.causeMatches('com.espertech.esper.*')" doc:name="Syntax Error in EventPattern Code">
-                <file:outbound-endpoint path="/home/ramon/git/ISI/EAMRRG_ISI/isi_practica_2/Ficheros/incorrect-eventpattern" responseTimeout="10000" doc:name="Incorrect EventPattern Code"/>
+                <file:outbound-endpoint path="C:\Users\Enrique\git\EAMRRG_ISI\isi_practica_2\Ficheros\incorrect-eventpattern" responseTimeout="10000" doc:name="Incorrect EventPattern Code"/>
             </catch-exception-strategy>
         </choice-exception-strategy>
     </flow>

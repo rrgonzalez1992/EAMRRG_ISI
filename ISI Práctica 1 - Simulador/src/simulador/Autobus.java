@@ -37,14 +37,14 @@ public class Autobus extends Thread{
 	public void atasco() throws InterruptedException{
 		System.out.println("El bus " + busId + " está en un atasco");
 		System.out.println("COMIENZA ATASCO "+busId);
-		Thread.sleep(300000);
+		Thread.sleep(360000);
 		System.out.println("TERMINA ATASCO "+busId);
 	}
 
 	public void run() {
 		while(true){
 			int desplazamiento = new Random().nextInt(4);
-			int atascoRandom = new Random().nextInt(1000);
+			int atascoRandom = 57;//new Random().nextInt(200);
 			if(atascoRandom == 57){
 				try {
 					atasco();

@@ -1,4 +1,4 @@
 @Name("PotentialTrafficJam") 
 insert into PotentialTrafficJam
 select *
-from pattern[every b = BusEvent() -> (BusEvent(busLatitud = b.busLatitud, busLongitud = b.busLongitud, busId = b.busId))];
+from pattern[every b = BusEvent() -> (BusEvent(busLatitud = b.busLatitud, busLongitud = b.busLongitud, busID = b.busID, timestamp != b.timestamp))];
