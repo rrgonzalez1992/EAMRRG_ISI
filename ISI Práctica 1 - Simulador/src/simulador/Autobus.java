@@ -45,10 +45,9 @@ public class Autobus extends Thread{
 	}
 
 	public void run() {
+		boolean volviendo = false;
 		while(true){
-			int desplazamiento = new Random().nextInt(4);
-			int atascoRandom = new Random().nextInt(200);
-			boolean volviendo = false;
+			int atascoRandom = new Random().nextInt(10000);
 			if(atascoRandom == 57){
 				try {
 					atasco();
@@ -57,12 +56,13 @@ public class Autobus extends Thread{
 				if(linea == 1){
 					if(latitud < finY1){
 						if(!volviendo)
-							latitud +=0.05;
+							latitud +=1;
 						else
-							latitud -=0.05;
+							latitud -=1;
 					}
 					else if(latitud == finY1){
 						volviendo = true;
+						latitud -= 1;
 					} else if(latitud == inicioY){
 						if(volviendo){
 							try {
@@ -70,16 +70,18 @@ public class Autobus extends Thread{
 							} catch (InterruptedException e) {}
 						}
 						volviendo = false;
+						latitud += 1;
 					}
 				} else if(linea == 2){
 					if(longitud < finX2){
 						if(!volviendo)
-							longitud +=0.05;
+							longitud +=1;
 						else
-							longitud -=0.05;
+							longitud -=1;
 					}
 					else if(longitud == finX2){
 						volviendo = true;
+						longitud -=1;
 					} else if(longitud == inicioX){
 						if(volviendo){
 							try {
@@ -87,6 +89,7 @@ public class Autobus extends Thread{
 							} catch (InterruptedException e) {}
 						}
 						volviendo = false;
+						longitud += 1;
 					}
 				}
 

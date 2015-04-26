@@ -1,0 +1,4 @@
+@Name("BusInStation") 
+insert into BusInStation
+select b.busID as Autobus, b.busLatitud as Latitud, b.busLongitud as Longitud
+from pattern[every b = BusEvent() -> (BusEvent(busLatitud = b.busLatitud, busLongitud = b.busLongitud, b.busLatitud = 20, b.busLongitud = 30, busID = b.busID))]
