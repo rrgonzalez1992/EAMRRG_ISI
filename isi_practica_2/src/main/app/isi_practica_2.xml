@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:smtps="http://www.mulesoft.org/schema/mule/smtps" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+<mule xmlns:twitter="http://www.mulesoft.org/schema/mule/twitter" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:smtps="http://www.mulesoft.org/schema/mule/smtps" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.2"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+xsi:schemaLocation="http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
@@ -12,14 +14,15 @@ http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/
 http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.mulesoft.org/schema/mule/smtps http://www.mulesoft.org/schema/mule/smtps/current/mule-smtps.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/twitter http://www.mulesoft.org/schema/mule/twitter/current/mule-twitter.xsd">
 <http:polling-connector name="HTTP_Polling" cookieSpec="netscape" validateConnections="true" pollingFrequency="16001" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" proxyHostname="api.thingspeak.com" proxyPort="80" doc:name="HTTP Polling"/>
     <vm:endpoint exchange-pattern="one-way" path="ComplexEventConsumerPath" name="ComplexEventConsumerGlobalVM" doc:name="VM">
-        <ee:multi-transaction action="NONE"/>
     </vm:endpoint>
     <http:connector name="HTTP_HTTPS" cookieSpec="netscape" validateConnections="true" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS"/>
     <http:endpoint exchange-pattern="request-response"  connector-ref="HTTP_HTTPS" method="POST" name="HTTP" address="http://wsf.cdyne.com/WeatherWS/Weather.asmx" doc:name="HTTP"/>
-<flow name="IslandEventReceptionAndManagement">
+    <twitter:config name="Twitter" accessKey="3208278525-GJCrodYTYu6zg7FJD2X5BoWNwhd0h62trWJDjoA" accessSecret="bkbpOXJIM5Ac8Pml4mlxKSx68cavnLLBRhbTYmUDJPqP6" consumerKey="XmYaHe9tNnJhypWsgbZijiWEX" consumerSecret="FnK8oJ95h3YgOKGPcr7vJGj5xmwXGAslY7RhfQu2ekhxfF1mE3" doc:name="Twitter"/>
+<flow name="IslandEventReceptionAndManagement" doc:name="IslandEventReceptionAndManagement">
 <composite-source doc:name="Composite Source">
 <http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34619/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP" responseTimeout="1000"/>
 <http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34636/feeds.json?results=1" connector-ref="HTTP_Polling" doc:name="HTTP" responseTimeout="1000"/>
@@ -32,28 +35,24 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
             </component>
         </scatter-gather>
 </flow>
-    <flow name="ComplexEventReceptionAndDecisionMaking">
+    <flow name="ComplexEventReceptionAndDecisionMaking" doc:name="ComplexEventReceptionAndDecisionMaking">
         <vm:inbound-endpoint exchange-pattern="one-way"  doc:name="ComplexEvent Consumer" ref="ComplexEventConsumerGlobalVM">
-            <vm:transaction action="NONE"/>
         </vm:inbound-endpoint>
         <scatter-gather doc:name="Scatter-Gather">
             <processor-chain>
-                <set-payload value="Detected Alert '#[message.inboundProperties['eventPatternName']]: #[payload.toString()]" doc:name="Set Alert Payload"/>
-                <smtps:outbound-endpoint host="smtp.gmail.com" port="465" user="${email.username}" password="${email.password}" to="${emailto}" from="${emailfrom}" subject="Detected ALERT" responseTimeout="10000" doc:name="Send Alert By Email"/>
+                <set-payload value="Alerta '#[message.inboundProperties['eventPatternName']]': #[payload.toString()]" doc:name="Set Alert Payload"/>
+                <smtps:outbound-endpoint host="smtp.gmail.com" port="465" user="${email.username}" password="${email.password}" to="${emailto}" from="${emailfrom}" subject="Atasco detectado" responseTimeout="10000" doc:name="Send Alert By Email"/>
             </processor-chain>
             <logger message="***Complex Event: #[payload]" level="INFO" doc:name="Logger"/>
             <processor-chain>
-                <custom-transformer class="transformer.ComplexEventToWSTransformer" doc:name="Java"/>
-                <cxf:jaxws-service port="WeatherSoap" service="GetCityWeatherByZIP" serviceClass="webservice.WeatherHttpGet" doc:name="CXF"/>
-               <http:outbound-endpoint exchange-pattern="request-response"    connector-ref="HTTP_HTTPS" doc:name="HTTP"   ref="HTTP" method="POST"/>
-                <echo-component doc:name="Echo"/>
-                <file:outbound-endpoint responseTimeout="10000" doc:name="File" outputPattern="response-message.txt" path="C:\Users\Enrique\git\EAMRRG_ISI\isi_practica_2\Ficheros"/>
+                <set-payload value="#[payload]" doc:name="Set Twitter Information"/>
+                <twitter:update-status config-ref="Twitter" status="Atasco producido en la l&#237;nea #[payload.get('Autobus').toString()]. Rogamos tengan paciencia" doc:name="Twitter"/>
             </processor-chain>
         </scatter-gather>
     </flow>
-    <flow name="EventPatternAdditionToEsper">
-        <file:inbound-endpoint path="C:\Users\Enrique\git\EAMRRG_ISI\isi_practica_2\Ficheros\new-eventpattern" moveToDirectory="C:\Users\Enrique\git\EAMRRG_ISI\isi_practica_2\Ficheros\deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
-            <file:filename-regex-filter pattern="file:filename-regex-filter caseSensitive=true,pattern=.+\.epl" caseSensitive="true"/>
+    <flow name="EventPatternAdditionToEsper" doc:name="EventPatternAdditionToEsper">
+        <file:inbound-endpoint path="C:\Users\Enrique\gitISI\EAMRRG_ISI\isi_practica_2\Ficheros\new-eventpattern" moveToDirectory="C:\Users\Enrique\gitISI\EAMRRG_ISI\isi_practica_2\Ficheros\deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
+            <file:filename-regex-filter pattern=".+\.epl" caseSensitive="true"/>
         </file:inbound-endpoint>
         <file:file-to-string-transformer doc:name="File to String"/>
         <component doc:name="Add EventPattern to Esper Engine">

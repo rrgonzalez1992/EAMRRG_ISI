@@ -53,6 +53,7 @@ public class AddEventPatternToEsperComponent implements Callable {
 								newComplexEvents[0].getUnderlying(), messageProperties);
 						
 						System.out.println("=====newComplexEvents[0].getUnderlying():" + newComplexEvents[0].getUnderlying());
+						System.out.println("=====newComplexEvents[0].getFragment(Longitud):" + newComplexEvents[0].getFragment("Autobus"));
 						
 					} catch (MuleException e) {
 						e.printStackTrace();
