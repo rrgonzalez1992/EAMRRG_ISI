@@ -45,13 +45,11 @@ http://www.mulesoft.org/schema/mule/twitter http://www.mulesoft.org/schema/mule/
             </processor-chain>
             <logger message="***Complex Event: #[payload]" level="INFO" doc:name="Logger"/>
             <choice doc:name="Choice">
-                <when expression="message.inboundProperties['eventPatternName'] == 'PotentialTrafficJam'">
-                    <set-payload value="#[payload]" doc:name="Set Twitter Information"/>
-                    <twitter:update-status config-ref="Twitter" status="Atasco producido en la l&#237;nea #[payload.get('Autobus').toString()]. Rogamos tengan paciencia" latitude="#[payload.get('Latitud').toString()]" longitude="#[payload.get('Longitud').toString()]" doc:name="TuitearAtasco"/>
+                <when expression="#[message.inboundProperties['eventPatternName'] == 'PotentialTrafficJam']">
+                    <twitter:update-status config-ref="Twitter" status="Atasco producido en la l&#237;nea #[payload.get('Autobus').toString()]. Rogamos tengan paciencia" doc:name="TuitearAtasco"/>
                 </when>
-                <when expression="message.inboundProperties['eventPatternName'] == 'BusInStation'">
-                    <set-payload value="#[payload]" doc:name="Copy_of_Set Twitter Information"/>
-                    <twitter:update-status config-ref="Twitter" status="El autobus #[payload.get('Autobus').toString()] ha finalizado su ruta. Pr&#243;ximamente retomar&#225; el itinerario." doc:name="TuitearRetirada"/>
+                <when expression="#[message.inboundProperties['eventPatternName'] == 'BusInStation']">
+                    <twitter:update-status config-ref="Twitter" status="El autobus #[payload.get('Autobus').toString()] ha finalizado su ruta. Comenzando nuevo viaje..." doc:name="TuitearRetirada"/>
                 </when>
             </choice>
         </scatter-gather>

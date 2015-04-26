@@ -7,6 +7,7 @@ public class Autobus extends Thread{
 	private double latitud;
 	private double longitud;
 	private int linea;
+	private boolean volviendo = false;
 	private static final double inicioX = 30;
 	private static final double inicioY = 20;
 	private static final double finY1 = 60;
@@ -33,28 +34,27 @@ public class Autobus extends Thread{
 	public void atasco() throws InterruptedException{
 		System.out.println("El bus " + busId + " está en un atasco");
 		System.out.println("COMIENZA ATASCO "+busId);
-		Thread.sleep(360000);
+		Thread.sleep(360000 - new Random().nextInt(30000));
 		System.out.println("TERMINA ATASCO "+busId);
 	}
 	
 	public void aparcar() throws InterruptedException{
-		System.out.println("El bus " + busId + " ha aparcado por finalizar su servicio");
+		System.out.println("El bus " + busId + " ha terminado su recorrido, en breve continua");
 		System.out.println("DETENCIÓN DE SERVICIO "+busId);
-		Thread.sleep(500000);
+		Thread.sleep(30000);
 		System.out.println("REANUDA SERVICIO "+busId);
 	}
 
 	public void run() {
-		boolean volviendo = false;
 		while(true){
-			int atascoRandom = new Random().nextInt(10000);
+			int atascoRandom = new Random().nextInt(250);
 			if(atascoRandom == 57){
 				try {
 					atasco();
 				} catch (InterruptedException e) {}
 			} else {
 				if(linea == 1){
-					if(latitud < finY1){
+					if(latitud < finY1 && latitud > inicioY){
 						if(!volviendo)
 							latitud +=1;
 						else
@@ -73,7 +73,7 @@ public class Autobus extends Thread{
 						latitud += 1;
 					}
 				} else if(linea == 2){
-					if(longitud < finX2){
+					if(longitud < finX2 && longitud > inicioX){
 						if(!volviendo)
 							longitud +=1;
 						else
