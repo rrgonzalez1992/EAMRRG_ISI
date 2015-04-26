@@ -77,7 +77,7 @@ public class Autobus extends Thread{
 
 	public String toString() {
 		return "Bus " + busId + "\nLatitud: " + latitud + "\nLongitud: "
-				+ longitud + ".";
+				+ longitud;
 
 	}
 }
