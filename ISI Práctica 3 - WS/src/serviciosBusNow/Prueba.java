@@ -21,7 +21,6 @@ public class Prueba {
 		String idBUS = object.getString("busID");
 		double latitud = object.getDouble("busLatitud");
 		double longitud = object.getDouble("busLongitud");
-		Date date = (Date) object.getDa
 		Autobus bus = new Autobus(idBUS, latitud, longitud);
 		}
 	}
