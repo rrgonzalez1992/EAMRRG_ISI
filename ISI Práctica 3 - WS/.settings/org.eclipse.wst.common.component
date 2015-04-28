@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="ISI Práctica 3 - WS">
+        <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
+        <property name="context-root" value="ISI_Práctica_3_-_WS"/>
+        <property name="java-output-path" value="/ISI Práctica 3 - WS/build/classes"/>
+    </wb-module>
+</project-modules>
