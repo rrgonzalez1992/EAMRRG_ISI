@@ -44,8 +44,6 @@ public class JsonToBusEventTransformer extends AbstractMessageTransformer
 			eventPayload.put("busID", jsonNode.get("feeds").path(0).get("field1").getTextValue());
 			eventPayload.put("busLatitud", Double.parseDouble(jsonNode.get("feeds").path(0).get("field2").getTextValue()));
 			eventPayload.put("busLongitud", Double.parseDouble(jsonNode.get("feeds").path(0).get("field3").getTextValue()));
-			
-
 			eventMap.put("BusEvent", eventPayload);
 			
 		} catch (JsonGenerationException e) {
