@@ -2,8 +2,6 @@ package serviciosBusNow;
 
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Set;
-
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;

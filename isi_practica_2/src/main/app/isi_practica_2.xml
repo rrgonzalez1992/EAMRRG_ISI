@@ -2,7 +2,7 @@
 
 <mule xmlns:mongo="http://www.mulesoft.org/schema/mule/mongo" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:twitter="http://www.mulesoft.org/schema/mule/twitter" xmlns:email="http://www.mulesoft.org/schema/mule/email"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:smtps="http://www.mulesoft.org/schema/mule/smtps" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.1"
+xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.2"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -25,8 +25,8 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
     <http:endpoint exchange-pattern="request-response"  connector-ref="HTTP_HTTPS" method="POST" name="HTTP" address="http://wsf.cdyne.com/WeatherWS/Weather.asmx" doc:name="HTTP"/>
     <twitter:config name="Twitter" accessKey="3208278525-GJCrodYTYu6zg7FJD2X5BoWNwhd0h62trWJDjoA" accessSecret="bkbpOXJIM5Ac8Pml4mlxKSx68cavnLLBRhbTYmUDJPqP6" consumerKey="XmYaHe9tNnJhypWsgbZijiWEX" consumerSecret="FnK8oJ95h3YgOKGPcr7vJGj5xmwXGAslY7RhfQu2ekhxfF1mE3" doc:name="Twitter"/>
     <db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="EAMRRG" password="EAMRRG" database="busNow" doc:name="MySQL Configuration"/>
-    <mongo:config name="Mongo_DB" username="EAMRRG" password="EAMRRG" database="busNow" doc:name="Mongo DB"/>
-    <flow name="IslandEventReceptionAndManagement">
+    <mongo:config name="Mongo_DB" username="EAMRRG" password="EAMRRG" database="busNow" doc:name="Mongo DB" connectTimeout="0"/>
+    <flow name="IslandEventReceptionAndManagement" doc:name="IslandEventReceptionAndManagement">
         <composite-source doc:name="Composite Source">
             <http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34619/feeds.json?results=1" connector-ref="HTTP_Polling" responseTimeout="1000" doc:name="HTTP"/>
             <http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34636/feeds.json?results=1" connector-ref="HTTP_Polling" responseTimeout="1000" doc:name="HTTP"/>
@@ -37,12 +37,12 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
             <component doc:name="Send BusEvent to Esper Engine">
                 <singleton-object class="esper.SendEventToEsperComponent"/>
             </component>
-            <mongo:insert-object-from-map config-ref="Mongo_DB" collection="eventPayload" doc:name="Mongo DB">
+            <mongo:insert-object-from-map config-ref="Mongo_DB" collection="eventPayload" doc:name="Mongo DB" writeConcern="NORMAL">
                 <mongo:element-attributes ref="#[payload]"/>
             </mongo:insert-object-from-map>
         </scatter-gather>
     </flow>
-    <flow name="ComplexEventReceptionAndDecisionMaking" >
+    <flow name="ComplexEventReceptionAndDecisionMaking" doc:name="ComplexEventReceptionAndDecisionMaking">
         <vm:inbound-endpoint exchange-pattern="one-way"  doc:name="ComplexEvent Consumer" ref="ComplexEventConsumerGlobalVM">
         </vm:inbound-endpoint>
         <scatter-gather doc:name="Scatter-Gather">
@@ -61,7 +61,7 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
             </choice>
         </scatter-gather>
     </flow>
-    <flow name="EventPatternAdditionToEsper" >
+    <flow name="EventPatternAdditionToEsper" doc:name="EventPatternAdditionToEsper">
         <file:inbound-endpoint path="/home/ramon/EAMRRG_ISI/isi_practica_2/Ficheros/new-eventpattern" moveToDirectory="/home/ramon/EAMRRG_ISI/isi_practica_2/Ficheros/deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
             <file:filename-regex-filter pattern=".+\.epl" caseSensitive="true"/>
         </file:inbound-endpoint>
