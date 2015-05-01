@@ -23,9 +23,9 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
     </vm:endpoint>
     <http:connector name="HTTP_HTTPS" cookieSpec="netscape" validateConnections="true" sendBufferSize="0" receiveBufferSize="0" receiveBacklog="0" clientSoTimeout="10000" serverSoTimeout="10000" socketSoLinger="0" doc:name="HTTP-HTTPS"/>
     <http:endpoint exchange-pattern="request-response"  connector-ref="HTTP_HTTPS" method="POST" name="HTTP" address="http://wsf.cdyne.com/WeatherWS/Weather.asmx" doc:name="HTTP"/>
-    <twitter:config name="Twitter" accessKey="3208278525-GJCrodYTYu6zg7FJD2X5BoWNwhd0h62trWJDjoA" accessSecret="bkbpOXJIM5Ac8Pml4mlxKSx68cavnLLBRhbTYmUDJPqP6" consumerKey="XmYaHe9tNnJhypWsgbZijiWEX" consumerSecret="FnK8oJ95h3YgOKGPcr7vJGj5xmwXGAslY7RhfQu2ekhxfF1mE3" doc:name="Twitter"/>
+    <twitter:config name="Twitter" accessKey="3208278525-0ZaC4AU0bjjspV7XRXOGCYWE3eR2xU9sw3gQyPQ" accessSecret="QO46UgsVuG8kIpvAoFyW1M2NPXD96Py3zMHD1zBnTTFEW" consumerKey="XmYaHe9tNnJhypWsgbZijiWEX" consumerSecret="FnK8oJ95h3YgOKGPcr7vJGj5xmwXGAslY7RhfQu2ekhxfF1mE3" doc:name="Twitter"/>
     <db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="EAMRRG" password="EAMRRG" database="busNow" doc:name="MySQL Configuration"/>
-    <mongo:config name="Mongo_DB" username="EAMRRG" password="EAMRRG" database="busNow" doc:name="Mongo DB" connectTimeout="0"/>
+    <mongo:config name="Mongo_DB" username="EAMRRG" password="EAMRRG" database="test" doc:name="Mongo DB" connectTimeout="0"/>
     <flow name="IslandEventReceptionAndManagement" doc:name="IslandEventReceptionAndManagement">
         <composite-source doc:name="Composite Source">
             <http:inbound-endpoint exchange-pattern="one-way" host="api.thingspeak.com" port="80" path="channels/34619/feeds.json?results=1" connector-ref="HTTP_Polling" responseTimeout="1000" doc:name="HTTP"/>
@@ -53,16 +53,16 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
             <logger message="***Complex Event: #[payload]" level="INFO" doc:name="Logger"/>
             <choice doc:name="Choice">
                 <when expression="#[message.inboundProperties['eventPatternName'] == 'PotentialTrafficJam']">
-                    <twitter:update-status config-ref="Twitter" status="Atasco producido en la l&#237;nea #[payload.get('Autobus').toString()]. Rogamos tengan paciencia" doc:name="TuitearAtasco"/>
+                    <twitter:update-status config-ref="Twitter" status="Atasco producido en la l&#237;nea #[payload.get('Autobus').toString()] a las #[payload.get('Timestamp').toString().substring(11,19)]. Rogamos tengan paciencia " doc:name="TuitearAtasco"/>
                 </when>
                 <when expression="#[message.inboundProperties['eventPatternName'] == 'BusInStation']">
-                    <twitter:update-status config-ref="Twitter" status="El autobus #[payload.get('Autobus').toString()] ha finalizado su ruta. Comenzando nuevo viaje..." doc:name="TuitearRetirada"/>
+                    <twitter:update-status config-ref="Twitter" status="El autobus #[payload.get('Autobus').toString()] ha finalizado su ruta a las #[payload.get('Timestamp').toString().substring(11,19)]. Comenzando nuevo viaje..." doc:name="TuitearRetirada"/>
                 </when>
             </choice>
             <processor-chain>
                 <choice doc:name="Choice_WS">
                     <when expression="#[message.inboundProperties['eventPatternName'] == 'PotentialTrafficJam']">
-                        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="ISI_REST/obtenerBusesDisponibles/#[payload.get('Autobus').toString()]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Atasco"/>
+                        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="ProyectoISI/Servicios/obtenerBusesDisponibles/#[payload.get('Autobus').toString()]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Atasco"/>
                     </when>
                     <when expression="#[message.inboundProperties['eventPatternName'] == 'BusInStation']">
                         <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="ISI_REST/obtenerBusesNoAparcados/#[payload.get('Autobus').toString()]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Aparcado"/>
@@ -73,7 +73,7 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
         </scatter-gather>
     </flow>
     <flow name="EventPatternAdditionToEsper" doc:name="EventPatternAdditionToEsper">
-        <file:inbound-endpoint path="/home/ramon/git/EAMRRG_ISI/isi_practica_2/Ficheros/new-eventpattern" moveToDirectory="/home/ramon/git/EAMRRG_ISI/isi_practica_2/Ficheros/deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
+        <file:inbound-endpoint path="C:\Users\Enrique\gitISI\EAMRRG_ISI\isi_practica_2\Ficheros\new-eventpattern" moveToDirectory="C:\Users\Enrique\gitISI\EAMRRG_ISI\isi_practica_2\Ficheros\deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
             <file:filename-regex-filter pattern=".+\.epl" caseSensitive="true"/>
         </file:inbound-endpoint>
         <file:file-to-string-transformer doc:name="File to String"/>

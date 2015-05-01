@@ -11,7 +11,7 @@
 	<classpathentry kind="con" path="MULE_LIB/Twitter/org.mule.tooling.ui.contribution.twitter.3.5.0"/>
 	<classpathentry kind="src" path="src/main/api"/>
 	<classpathentry exported="true" kind="lib" path="lib/esper-4.11.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/ramon/git/EAMRRG_ISI/isi_practica_2/lib/mysql-connector-java-5.1.35-bin.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Enrique/Programacion/mysql-connector-java-5.1.34/mysql-connector-java-5.1.34-bin.jar"/>
 	<classpathentry kind="con" path="MULE_LIB/Mongo DB/org.mule.tooling.ui.contribution.mongo.3.5.0"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
