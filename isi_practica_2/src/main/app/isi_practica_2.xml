@@ -62,10 +62,10 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
             <processor-chain>
                 <choice doc:name="Choice_WS">
                     <when expression="#[message.inboundProperties['eventPatternName'] == 'PotentialTrafficJam']">
-                        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="ISI_REST/obtenerBusesDisponibles/#[payload.get('Autobus').busID]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Atasco"/>
+                        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="ISI_REST/obtenerBusesDisponibles/#[payload.get('Autobus').toString()]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Atasco"/>
                     </when>
                     <when expression="#[message.inboundProperties['eventPatternName'] == 'BusInStation']">
-                        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="ISI_REST/obtenerBusesNoAparcados/#[payload.get('Autobus').busID]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Aparcado"/>
+                        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="ISI_REST/obtenerBusesNoAparcados/#[payload.get('Autobus').toString()]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Aparcado"/>
                     </when>
                 </choice>
                 <file:outbound-endpoint path="/home/ramon/git/EAMRRG_ISI/isi_practica_2/Ficheros/results-ws" outputPattern="results-ws.txt" responseTimeout="10000" doc:name="File"/>
