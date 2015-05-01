@@ -59,10 +59,21 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
                     <twitter:update-status config-ref="Twitter" status="El autobus #[payload.get('Autobus').toString()] ha finalizado su ruta. Comenzando nuevo viaje..." doc:name="TuitearRetirada"/>
                 </when>
             </choice>
+            <processor-chain>
+                <choice doc:name="Choice_WS">
+                    <when expression="#[message.inboundProperties['eventPatternName'] == 'PotentialTrafficJam']">
+                        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="ISI_REST/obtenerBusesDisponibles/#[payload.get('Autobus').busID]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Atasco"/>
+                    </when>
+                    <when expression="#[message.inboundProperties['eventPatternName'] == 'BusInStation']">
+                        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="ISI_REST/obtenerBusesNoAparcados/#[payload.get('Autobus').busID]" connector-ref="HTTP_HTTPS" method="GET" doc:name="WS_Aparcado"/>
+                    </when>
+                </choice>
+                <file:outbound-endpoint path="/home/ramon/git/EAMRRG_ISI/isi_practica_2/Ficheros/results-ws" outputPattern="results-ws.txt" responseTimeout="10000" doc:name="File"/>
+            </processor-chain>
         </scatter-gather>
     </flow>
     <flow name="EventPatternAdditionToEsper" doc:name="EventPatternAdditionToEsper">
-        <file:inbound-endpoint path="/home/ramon/EAMRRG_ISI/isi_practica_2/Ficheros/new-eventpattern" moveToDirectory="/home/ramon/EAMRRG_ISI/isi_practica_2/Ficheros/deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
+        <file:inbound-endpoint path="/home/ramon/git/EAMRRG_ISI/isi_practica_2/Ficheros/new-eventpattern" moveToDirectory="/home/ramon/git/EAMRRG_ISI/isi_practica_2/Ficheros/deployed-eventpattern" pollingFrequency="2000" fileAge="1000" responseTimeout="10000" doc:name="New EPL EventPattern">
             <file:filename-regex-filter pattern=".+\.epl" caseSensitive="true"/>
         </file:inbound-endpoint>
         <file:file-to-string-transformer doc:name="File to String"/>
@@ -71,7 +82,7 @@ http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mo
         </component>
         <choice-exception-strategy doc:name="Choice Exception Strategy">
             <catch-exception-strategy when="exception.causeMatches('com.espertech.esper.*')" doc:name="Syntax Error in EventPattern Code">
-                <file:outbound-endpoint path="/home/ramon/EAMRRG_ISI/isi_practica_2/Ficheros/incorrect-eventpattern" responseTimeout="10000" doc:name="Incorrect EventPattern Code"/>
+                <file:outbound-endpoint path="/home/ramon/git/EAMRRG_ISI/isi_practica_2/Ficheros/incorrect-eventpattern" responseTimeout="10000" doc:name="Incorrect EventPattern Code"/>
             </catch-exception-strategy>
         </choice-exception-strategy>
     </flow>
