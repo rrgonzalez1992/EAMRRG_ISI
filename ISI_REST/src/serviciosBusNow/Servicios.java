@@ -9,7 +9,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 
-
+/**
+ * Servicios REST
+ * @author Enrique Arauz Morales y Ramón Ramírez González
+ *
+ */
 @Path("/Servicios")
 public class Servicios {
 
@@ -20,11 +24,29 @@ public class Servicios {
 		configBD = new ConfigBD();
 	}
 	
+	/**
+	 * Servicio que devuelve un JSON con los autobuses que no están atascados dado un id con un bus atascado
+	 * @param idBusAtascado
+	 * @return
+	 */
 	@GET
 	@Path("/obtenerBusesDisponibles/{busAtasco}")
 	@Produces("application/json")
 	public ArrayList<Autobus> obtenerBusesDisponibles(@PathParam("busAtasco") String idBusAtascado){
 		return Operaciones.obtenerBusesDisponibles(idBusAtascado);
+	}
+	
+
+	/**
+	 * Servicio que devuelve un JSON con los autobuses que no están aparcados dado un id con un bus aparcado
+	 * @param idBusAparcado
+	 * @return
+	 */
+	@GET
+	@Path("/obtenerBusesNoAparcados/{busAparcado}")
+	@Produces("application/json")
+	public ArrayList<Autobus> obtenerBusesNoAparcados(@PathParam("busAparcado") String idBusAparcado){
+		return Operaciones.obtenerBusesNoAparcados(idBusAparcado);
 	}
 	
 }
