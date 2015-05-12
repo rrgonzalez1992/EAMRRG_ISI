@@ -68,8 +68,9 @@ public class Operaciones {
 	}
 
 	/**
-	 * Método que calcula los buses que no están aparcados dado el ID de uno
-	 * que sí lo está
+	 * Método que calcula los buses que no están aparcados dado el ID de uno que
+	 * sí lo está
+	 * 
 	 * @param busAparcado
 	 * @return
 	 */
@@ -110,4 +111,70 @@ public class Operaciones {
 		return buses;
 	}
 
+	public static ArrayList<Autobus> obtenerInformacionLinea(int linea) {
+		DBCollection coleccion = ConfigBD.getDB().getCollection("eventPayload");
+		ArrayList<Autobus> informacion = new ArrayList<Autobus>();
+		for (int i = 1; i <= 5; i++) {
+			DBObject query = new BasicDBObject();
+			query.put("BusEvent.busID", "L" + linea + "B0" + i);
+			DBObject orden = new BasicDBObject();
+			orden.put("_id", -1);
+			DBCursor cursor = coleccion.find(query).sort(orden).limit(1);
+			while (cursor.hasNext()) {
+				Map<?, ?> tupla = cursor.next().toMap();
+				BasicDBObject datosTupla = (BasicDBObject) tupla
+						.get("BusEvent");
+				System.out.println("BUS: " + datosTupla.getString("busID"));
+				System.out
+						.println("TIME: " + datosTupla.getString("timestamp"));
+				System.out.println("LATITUD: "
+						+ datosTupla.getDouble("busLatitud"));
+				System.out.println("LONGITUD: "
+						+ datosTupla.getDouble("busLongitud"));
+				double latitud = datosTupla.getDouble("busLatitud");
+				double longitud = datosTupla.getDouble("busLongitud");
+				informacion.add(new Autobus(datosTupla.getString("busID"),
+						latitud, longitud));
+			}
+		}
+		return informacion;
+	}
+
+	public static ArrayList<Autobus> obtenerBusesAtascadosLinea(int linea){
+		DBCollection coleccion = ConfigBD.getDB().getCollection("eventPayload");
+		ArrayList<Autobus> buses = new ArrayList<Autobus>();
+		ArrayList<Autobus> comprobarBuses = null;
+		for (int i = 1; i <= 5; i++) {
+				comprobarBuses = new ArrayList<Autobus>();
+				DBObject query = new BasicDBObject();
+				query.put("BusEvent.busID", "L" + linea + "B0" + i);
+				DBObject orden = new BasicDBObject();
+				orden.put("_id", -1);
+				DBCursor cursor = coleccion.find(query).sort(orden).limit(2);
+				while (cursor.hasNext()) {
+					Map<?, ?> tupla = cursor.next().toMap();
+					BasicDBObject datosTupla = (BasicDBObject) tupla
+							.get("BusEvent");
+					System.out.println("BUS: " + datosTupla.getString("busID"));
+					System.out.println("TIME: "
+							+ datosTupla.getString("timestamp"));
+					System.out.println("LATITUD: "
+							+ datosTupla.getDouble("busLatitud"));
+					System.out.println("LONGITUD: "
+							+ datosTupla.getDouble("busLongitud"));
+					comprobarBuses.add(new Autobus(datosTupla
+							.getString("busID"), datosTupla
+							.getDouble("busLatitud"), datosTupla
+							.getDouble("busLongitud")));
+				}
+				Autobus bus1 = comprobarBuses.get(0), bus2 = comprobarBuses
+						.get(1);
+				if (bus1.getLatitud() == bus2.getLatitud() && bus1
+						.getLongitud() == bus2.getLongitud()) {
+					buses.add(bus1);
+				}
+		}
+		return buses;
+	}
+	
 }

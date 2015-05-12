@@ -49,4 +49,18 @@ public class Servicios {
 		return Operaciones.obtenerBusesNoAparcados(idBusAparcado);
 	}
 	
+	@GET
+	@Path("/obtenerInformacionLinea/{lineaID}")
+	@Produces("application/json")
+	public ArrayList<Autobus> obtenerInformacionLinea(@PathParam("lineaID") Integer linea){
+		return Operaciones.obtenerInformacionLinea(linea.intValue());
+	}
+	
+	@GET
+	@Path("/obtenerBusesAtascadosLinea/{lineaID}")
+	@Produces("application/json")
+	public ArrayList<Autobus> obtenerBusesAtascadosLinea(@PathParam("lineaID") Integer linea){
+		return Operaciones.obtenerBusesAtascadosLinea(linea.intValue());
+	}
+	
 }
