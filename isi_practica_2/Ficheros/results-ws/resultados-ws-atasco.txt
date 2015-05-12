@@ -1,0 +1,1 @@
+[{"busID":"L1B01","latitud":20.0,"longitud":30.0},{"busID":"L1B02","latitud":36.0,"longitud":30.0},{"busID":"L1B05","latitud":35.0,"longitud":30.0}]

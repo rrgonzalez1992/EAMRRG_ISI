@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="ServiciosService" targetNamespace="http://serviciosBusNow/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://serviciosBusNow/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema">
+  <import namespace="http://serviciosBusNow/" schemaLocation="servicios_schema1.xsd"/>
+</schema>
+  </wsdl:types>
+  <wsdl:message name="obtenerBusesNoAparcados">
+    <wsdl:part name="parameters" element="tns:obtenerBusesNoAparcados">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="obtenerBusesNoAparcadosResponse">
+    <wsdl:part name="parameters" element="tns:obtenerBusesNoAparcadosResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="obtenerBusesDisponibles">
+    <wsdl:part name="parameters" element="tns:obtenerBusesDisponibles">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="obtenerBusesDisponiblesResponse">
+    <wsdl:part name="parameters" element="tns:obtenerBusesDisponiblesResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="Servicios">
+    <wsdl:operation name="obtenerBusesNoAparcados">
+      <wsdl:input name="obtenerBusesNoAparcados" message="tns:obtenerBusesNoAparcados">
+    </wsdl:input>
+      <wsdl:output name="obtenerBusesNoAparcadosResponse" message="tns:obtenerBusesNoAparcadosResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="obtenerBusesDisponibles">
+      <wsdl:input name="obtenerBusesDisponibles" message="tns:obtenerBusesDisponibles">
+    </wsdl:input>
+      <wsdl:output name="obtenerBusesDisponiblesResponse" message="tns:obtenerBusesDisponiblesResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ServiciosServiceSoapBinding" type="tns:Servicios">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="obtenerBusesNoAparcados">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="obtenerBusesNoAparcados">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="obtenerBusesNoAparcadosResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="obtenerBusesDisponibles">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="obtenerBusesDisponibles">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="obtenerBusesDisponiblesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="ServiciosService">
+    <wsdl:port name="ServiciosPort" binding="tns:ServiciosServiceSoapBinding">
+      <soap:address location="http://localhost:8080/ISI_SOAP/services/ServiciosPort"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

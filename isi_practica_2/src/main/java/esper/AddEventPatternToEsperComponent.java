@@ -27,7 +27,6 @@ public class AddEventPatternToEsperComponent implements Callable {
 		
 		StatementAwareUpdateListener genericListener = new StatementAwareUpdateListener() {
 			
-			@SuppressWarnings("deprecation")
 			public void update(EventBean[] newComplexEvents, EventBean[] oldComplexEvents, 
 					EPStatement detectedEventPattern, EPServiceProvider serviceProvider) {
 				
